@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Metode Numerik – Interpolasi Newton</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, #4f46e52e 0, transparent 55%),
+        radial-gradient(circle at bottom right, #0ea5e92e 0, #020617 70%);
+      color: #0b1220;
+      min-height: 100vh;
+      padding: 32px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      border-radius: 22px;
+      box-shadow:
+        0 22px 60px rgba(15, 23, 42, 0.55),
+        0 0 0 1px rgba(148, 163, 184, 0.3);
+      padding: 26px 30px 32px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      backdrop-filter: blur(18px);
+      color: #e5e7eb;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before,
+    .container::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(40px);
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+    .container::before {
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, #4f46e5, transparent 70%);
+      top: -80px;
+      right: -40px;
+    }
+
+    .container::after {
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, #06b6d4, transparent 70%);
+      bottom: -60px;
+      left: -20px;
+    }
+
+    .content-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .title-block h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e5e7eb;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .title-block p {
+      font-size: 13px;
+      color: #9ca3af;
+      line-height: 1.5;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(129, 140, 248, 0.16), rgba(56, 189, 248, 0.12));
+      color: #e0f2fe;
+      border: 1px solid rgba(129, 140, 248, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+    }
+
+    .section-row {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: 16px;
+      margin-bottom: 18px;
+      align-items: stretch;
+    }
+
+    .info-card {
+      background: radial-gradient(circle at top left, rgba(129, 140, 248, 0.18), rgba(15, 23, 42, 0.9));
+      border-radius: 16px;
+      padding: 16px 17px 14px;
+      border: 1px solid rgba(129, 140, 248, 0.6);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.55);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: "";
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.55), transparent 70%);
+      top: -50px;
+      right: -40px;
+      opacity: 0.4;
+    }
+
+    .info-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-title::before {
+      content: "ℹ️";
+      font-size: 15px;
+    }
+
+    .info-body {
+      font-size: 13px;
+      color: #cbd5f5;
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-body ul {
+      margin-top: 6px;
+      margin-left: 18px;
+    }
+
+    .info-body li {
+      margin-bottom: 4px;
+    }
+
+    .quiz-card {
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+      border-radius: 16px;
+      padding: 14px 16px 16px;
+      border: 1px solid rgba(148, 163, 184, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.6);
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quiz-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e5e7eb;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .quiz-meta {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .quiz-status-chip {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(22, 163, 74, 0.7);
+    }
+
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .question-card {
+      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.12), rgba(15, 23, 42, 0.98));
+      border-radius: 14px;
+      padding: 10px 12px 11px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.5);
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #4f46e5, #0ea5e9);
+      color: #f9fafb;
+      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.7);
+    }
+
+    .topic-label {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .question-text {
+      font-size: 13px;
+      color: #e5e7eb;
+      margin-bottom: 6px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .option-btn {
+      font-size: 12px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      color: #e5e7eb;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      white-space: normal;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(129, 140, 248, 0.25));
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: -1;
+    }
+
+    .option-btn:hover {
+      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.8), rgba(15, 23, 42, 0.95));
+      border-color: rgba(129, 140, 248, 0.85);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(15, 23, 42, 0.85);
+    }
+
+    .option-btn:hover::before {
+      opacity: 0.6;
+    }
+
+    .option-btn.selected {
+      background: radial-gradient(circle at top left, #4f46e5, #0ea5e9);
+      color: #f9fafb;
+      border-color: transparent;
+      box-shadow:
+        0 10px 22px rgba(59, 130, 246, 0.85),
+        0 0 0 1px rgba(191, 219, 254, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .feedback {
+      margin-top: 7px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 18px;
+    }
+
+    .feedback-text {
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .feedback.correct .feedback-text {
+      color: #4ade80;
+    }
+
+    .feedback.wrong .feedback-text {
+      color: #fca5a5;
+    }
+
+    .solution-btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(129, 140, 248, 0.9);
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.96));
+      color: #c7d2fe;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .solution-btn:hover {
+      background: radial-gradient(circle at top left, #4f46e5, #0ea5e9);
+      color: #f9fafb;
+      box-shadow: 0 8px 18px rgba(79, 70, 229, 0.9);
+      border-color: transparent;
+    }
+
+    .solution {
+      margin-top: 8px;
+      padding: 9px 10px;
+      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.6), rgba(15, 23, 42, 0.98));
+      border-radius: 10px;
+      border-left: 3px solid #4f46e5;
+      font-size: 12px;
+      color: #e5e7eb;
+      line-height: 1.55;
+      display: none;
+    }
+
+    footer {
+      margin-top: 22px;
+      font-size: 11px;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    footer span {
+      color: #c4b5fd;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        padding: 22px 16px 26px;
+        border-radius: 18px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .section-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 18px 10px;
+      }
+
+      .title-block h1 {
+        font-size: 20px;
+      }
+
+      .quiz-card,
+      .info-card {
+        border-radius: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="content-inner">
+    <header>
+      <div class="title-block">
+        <h1>Metode Numerik – Interpolasi Newton</h1>
+        <p>
+          Baca ringkasan interpolasi Newton berbasis beda terbagi, lalu jawab tiga soal.<br>
+          Jika jawaban salah, tekan tombol <b>penyelesaian</b> untuk melihat langkahnya.
+        </p>
+      </div>
+      <span class="tag">
+        <span class="tag-dot"></span>
+        Interpolasi Newton • Quiz
+      </span>
+    </header>
+
+    <div class="section-row">
+      <!-- INFO -->
+      <div class="info-card">
+        <div class="info-title">Ringkasan Interpolasi Newton</div>
+        <div class="info-body">
+          <p>
+            Interpolasi Newton membangun polinom interpolasi dari data titik
+            <i>(x₀, f(x₀)), (x₁, f(x₁)), ..., (xₙ, f(xₙ))</i> menggunakan
+            beda terbagi (<i>divided differences</i>).
+          </p>
+          <ul>
+            <li>Beda terbagi pertama: <b>f[x₁, x₀] = (f(x₁) − f(x₀)) / (x₁ − x₀)</b>.</li>
+            <li>Beda terbagi kedua: <b>f[x₂, x₁, x₀] = (f[x₂, x₁] − f[x₁, x₀]) / (x₂ − x₀)</b>.</li>
+            <li>Bentuk polinom Newton derajat 1:
+              <br><b>P₁(x) = f[x₀] + f[x₁, x₀](x − x₀)</b>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="quiz-card">
+        <div class="quiz-header">
+          <div>
+            <div class="quiz-title">LATIHAN SOAL INTERPOLASI NEWTON</div>
+            <div class="quiz-meta">Konsep dasar dan perhitungan beda terbagi.</div>
+          </div>
+          <div class="quiz-status-chip">3 soal • latihan</div>
+        </div>
+
+        <div class="question-list">
+
+          <div class="question-card" data-correct="b">
+            <div class="question-header">
+              <span class="badge">Soal 1</span>
+              <span class="topic-label">Konsep dasar</span>
+            </div>
+            <div class="question-text">
+              Interpolasi Newton digunakan untuk...
+            </div>
+            <div class="options">
+              <button class="option-btn" data-option="a">
+                A. Menentukan akar persamaan non-linear
+              </button>
+              <button class="option-btn" data-option="b">
+                B. Mencari nilai pendekatan suatu fungsi berdasarkan data titik
+              </button>
+              <button class="option-btn" data-option="c">
+                C. Menjumlahkan dua persamaan linear
+              </button>
+              <button class="option-btn" data-option="d">
+                D. Menentukan limit suatu fungsi
+              </button>
+            </div>
+            <div class="feedback">
+              <span class="feedback-text"></span>
+              <button class="solution-btn" hidden>Lihat penyelesaian</button>
+            </div>
+            <div class="solution">
+              Interpolasi Newton adalah metode untuk menyusun polinom yang
+              melewati beberapa titik data. Dari polinom tersebut kita bisa
+              mendekati nilai fungsi di titik lain. Jadi, jawabannya adalah
+              <b>mencari nilai pendekatan suatu fungsi berdasarkan data titik</b>.
+            </div>
+          </div>
+
+          <div class="question-card" data-correct="c">
+            <div class="question-header">
+              <span class="badge">Soal 2</span>
+              <span class="topic-label">Beda terbagi derajat 1</span>
+            </div>
+            <div class="question-text">
+              Diberikan data titik berikut:<br><br>
+              • x₀ = 1, dengan f(x₀) = 3<br>
+              • x₁ = 2, dengan f(x₁) = 5<br><br>
+              Gunakan interpolasi beda terbagi Newton derajat 1 untuk
+              memperkirakan nilai f(1,5).
+            </div>
+            <div class="options">
+              <button class="option-btn" data-option="a">A. 3,0</button>
+              <button class="option-btn" data-option="b">B. 3,5</button>
+              <button class="option-btn" data-option="c">C. 4,0</button>
+              <button class="option-btn" data-option="d">D. 4,5</button>
+            </div>
+            <div class="feedback">
+              <span class="feedback-text"></span>
+              <button class="solution-btn" hidden>Lihat penyelesaian</button>
+            </div>
+            <div class="solution">
+              1. Hitung beda terbagi pertama:<br>
+              f[x₁, x₀] = (f(x₁) − f(x₀)) / (x₁ − x₀)
+              = (5 − 3)/(2 − 1) = 2.<br><br>
+              2. Polinom Newton derajat 1:<br>
+              P₁(x) = f[x₀] + f[x₁, x₀](x − x₀)
+              = 3 + 2(x − 1).<br><br>
+              3. Substitusi x = 1,5:<br>
+              P₁(1,5) = 3 + 2(1,5 − 1)
+              = 3 + 2(0,5)
+              = 3 + 1
+              = 4.<br><br>
+              Jadi, nilai pendekatan f(1,5) adalah <b>4,0</b>.
+            </div>
+          </div>
+
+          <div class="question-card" data-correct="c">
+            <div class="question-header">
+              <span class="badge">Soal 3</span>
+              <span class="topic-label">Beda terbagi kedua</span>
+            </div>
+            <div class="question-text">
+              Diberikan data titik berikut:<br><br>
+              • x₀ = 0, dengan f(x₀) = 1<br>
+              • x₁ = 1, dengan f(x₁) = 3<br>
+              • x₂ = 2, dengan f(x₂) = 7<br><br>
+              Hitung beda terbagi kedua f[x₂, x₁, x₀].
+            </div>
+            <div class="options">
+              <button class="option-btn" data-option="a">A. 0</button>
+              <button class="option-btn" data-option="b">B. 0,5</button>
+              <button class="option-btn" data-option="c">C. 1</button>
+              <button class="option-btn" data-option="d">D. 2</button>
+            </div>
+            <div class="feedback">
+              <span class="feedback-text"></span>
+              <button class="solution-btn" hidden>Lihat penyelesaian</button>
+            </div>
+            <div class="solution">
+              1. Beda terbagi pertama:<br>
+              f[x₁, x₀] = (3 − 1)/(1 − 0) = 2<br>
+              f[x₂, x₁] = (7 − 3)/(2 − 1) = 4<br><br>
+              2. Beda terbagi kedua:<br>
+              f[x₂, x₁, x₀] = (f[x₂, x₁] − f[x₁, x₀]) / (x₂ − x₀)
+              = (4 − 2)/(2 − 0)
+              = 2/2
+              = 1.<br><br>
+              Jadi, nilai beda terbagi kedua adalah <b>1</b>.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Dibuat sebagai tugas <span>Metode Numerik</span>.
+  </div>
+</div>
+
+<script>
+  const questionCards = document.querySelectorAll('.question-card');
+
+  questionCards.forEach(card => {
+    const correctOption = card.getAttribute('data-correct');
+    const optionButtons = card.querySelectorAll('.option-btn');
+    const feedback = card.querySelector('.feedback');
+    const feedbackText = card.querySelector('.feedback-text');
+    const solutionBtn = card.querySelector('.solution-btn');
+    const solutionBox = card.querySelector('.solution');
+
+    optionButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = btn.getAttribute('data-option');
+
+        // reset pilihan
+        optionButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        // reset feedback
+        feedback.classList.remove('correct', 'wrong');
+
+        if (chosen === correctOption) {
+          feedback.classList.add('correct');
+          feedbackText.textContent = 'Jawaban kamu benar 🎉';
+          solutionBtn.hidden = true;
+          solutionBox.style.display = 'none';
+        } else {
+          feedback.classList.add('wrong');
+          feedbackText.textContent = 'Masih kurang tepat, coba lagi atau lihat penyelesaian.';
+          solutionBtn.hidden = false;
+        }
+      });
+    });
+
+    solutionBtn.addEventListener('click', () => {
+      const visible = solutionBox.style.display === 'block';
+      solutionBox.style.display = visible ? 'none' : 'block';
+      solutionBtn.textContent = visible ? 'Lihat penyelesaian' : 'Sembunyikan penyelesaian';
+    });
+  });
+</script>
+</body>
+</html>

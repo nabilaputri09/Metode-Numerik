@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Metode Numerik - Quiz Interaktif</title>
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top,#1e3a8a,#020617 70%);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#e5e7eb;
+  overflow:hidden;
+}
+
+body::before{
+  content:"";
+  position:absolute;
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle,rgba(56,189,248,0.18),transparent 70%);
+  top:-200px;
+  left:-200px;
+}
+
+body::after{
+  content:"";
+  position:absolute;
+  width:500px;
+  height:500px;
+  background:radial-gradient(circle,rgba(99,102,241,0.15),transparent 70%);
+  bottom:-200px;
+  right:-200px;
+}
+
+.wrapper{
+  width:960px;
+  height:520px;
+  display:flex;
+  background:rgba(15,23,42,0.88);
+  border-radius:20px;
+  backdrop-filter:blur(14px);
+  box-shadow:0 30px 70px rgba(0,0,0,0.8);
+  overflow:hidden;
+  position:relative;
+  z-index:1;
+}
+
+.left{
+  width:55%;
+  padding:60px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.left::before{
+  content:"";
+  position:absolute;
+  width:260px;
+  height:260px;
+  background:linear-gradient(135deg,#38bdf8,#6366f1);
+  opacity:0.15;
+  border-radius:50%;
+  top:-80px;
+  right:-80px;
+}
+
+.left::after{
+  content:"";
+  position:absolute;
+  width:180px;
+  height:180px;
+  background:linear-gradient(135deg,#2563eb,#38bdf8);
+  opacity:0.12;
+  border-radius:50%;
+  bottom:-60px;
+  left:-60px;
+}
+
+.left h1{
+  margin:0;
+  font-size:32px;
+  font-weight:600;
+}
+
+.left p{
+  margin-top:18px;
+  font-size:14px;
+  color:#94a3b8;
+  line-height:1.7;
+  max-width:420px;
+}
+
+.dots{
+  position:absolute;
+  bottom:40px;
+  right:60px;
+  display:grid;
+  grid-template-columns:repeat(5,10px);
+  gap:10px;
+}
+
+.dots span{
+  width:6px;
+  height:6px;
+  background:#38bdf8;
+  border-radius:50%;
+  opacity:0.4;
+}
+
+.right{
+  width:45%;
+  padding:70px 80px;
+  background:rgba(2,6,23,0.4);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.right h2{
+  margin:0;
+  text-align:center;
+  font-weight:600;
+}
+
+.right span{
+  display:block;
+  text-align:center;
+  margin-top:6px;
+  font-size:13px;
+  color:#94a3b8;
+}
+
+input{
+  width:100%;
+  padding:12px 10px;
+  margin-top:30px;
+  background:transparent;
+  border:none;
+  border-bottom:2px solid #334155;
+  color:#e5e7eb;
+  font-size:14px;
+}
+
+input::placeholder{
+  color:#64748b;
+}
+
+input:focus{
+  outline:none;
+  border-color:#38bdf8;
+}
+
+button{
+  margin-top:42px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:26px;
+  background:linear-gradient(90deg,#2563eb,#38bdf8);
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  box-shadow:0 0 20px rgba(56,189,248,0.6);
+  transform:translateY(-1px);
+}
+
+.error{
+  margin-top:14px;
+  text-align:center;
+  font-size:14px;
+  color:#f87171;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <div class="left">
+    <h1>Metode Numerik – Quiz Interaktif</h1>
+    <p>
+      Media pembelajaran interaktif Metode Numerik yang memuat
+      materi Interpolasi Linear, Interpolasi Newton, serta metode
+      Eliminasi Gauss–Jordan untuk membantu memahami konsep dan
+      penyelesaian masalah numerik secara bertahap.
+    </p>
+
+    <div class="dots">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="right">
+    <h2>Sign In to Continue</h2>
+    <span>Masuk untuk mengakses materi</span>
+
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="pass" placeholder="Password">
+
+    <button onclick="login()">Sign In</button>
+    <div id="msg" class="error"></div>
+  </div>
+
+</div>
+
+<script>
+function login(){
+  var email = document.getElementById("email").value;
+  var pass  = document.getElementById("pass").value;
+  var msg   = document.getElementById("msg");
+
+  if(email === "" || pass === ""){
+    msg.innerHTML = "Email dan password harus diisi";
+  }else{
+    msg.innerHTML = "";
+    window.location.href = "menu.html";
+  }
+}
+</script>
+
+</body>
+</html>
